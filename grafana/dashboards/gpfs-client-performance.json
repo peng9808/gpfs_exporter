@@ -1,0 +1,336 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "8.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    }
+  ],
+  "id": null,
+  "uid": "gpfs-performance-simple",
+  "title": "GPFS 客户端性能聚合监控",
+  "tags": ["gpfs", "performance", "monitoring"],
+  "timezone": "browser",
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "label_values(up{job=\"gpfs-client-performance\"}, instance)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "选择客户端",
+        "multi": true,
+        "name": "instance",
+        "options": [],
+        "query": {
+          "query": "label_values(up{job=\"gpfs-client-performance\"}, instance)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "读取吞吐量",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(gpfs_perf_read_bytes_total{job=\"gpfs-client-performance\"}[1m]))",
+          "legendFormat": "集群读取速率",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "binBps",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 2,
+      "title": "写入吞吐量",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(gpfs_perf_write_bytes_total{job=\"gpfs-client-performance\"}[1m]))",
+          "legendFormat": "集群写入速率",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "binBps",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 3,
+      "title": "读取IOPS",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(gpfs_perf_operations_total{job=\"gpfs-client-performance\",operation=\"reads\"}[1m]))",
+          "legendFormat": "读取IOPS",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 4
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 4,
+      "title": "写入IOPS",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(rate(gpfs_perf_operations_total{job=\"gpfs-client-performance\",operation=\"writes\"}[1m]))",
+          "legendFormat": "写入IOPS",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 4
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 7,
+      "title": "活跃客户端节点",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(up{job=\"gpfs-client-performance\"} == 1)",
+          "legendFormat": "在线节点数",
+          "datasource": "${DS_PROMETHEUS}"
+        },
+        {
+          "expr": "count(rate(gpfs_perf_read_bytes_total{job=\"gpfs-client-performance\"}[1m]) > 0 or rate(gpfs_perf_write_bytes_total{job=\"gpfs-client-performance\"}[1m]) > 0)",
+          "legendFormat": "有IO活动节点数",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "green",
+                "value": 100
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 8,
+      "title": "客户端节点性能排名",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "topk(20, sum by (instance) (rate(gpfs_perf_read_bytes_total{job=\"gpfs-client-performance\",instance=~\"$instance\"}[1m])))",
+          "legendFormat": "读取速率",
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "expr": "topk(20, sum by (instance) (rate(gpfs_perf_write_bytes_total{job=\"gpfs-client-performance\",instance=~\"$instance\"}[1m])))",
+          "legendFormat": "写入速率", 
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "expr": "topk(20, sum by (instance) (rate(gpfs_perf_read_bytes_total{job=\"gpfs-client-performance\",instance=~\"$instance\"}[1m]) + rate(gpfs_perf_write_bytes_total{job=\"gpfs-client-performance\",instance=~\"$instance\"}[1m])))",
+          "legendFormat": "总吞吐量",
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "binBps",
+          "decimals": 1,
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        }
+      },
+      "transformations": [
+        {
+          "id": "seriesToColumns",
+          "options": {
+            "byField": "instance"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value #A": "读取速率",
+              "Value #B": "写入速率",
+              "Value #C": "总吞吐量",
+              "instance": "客户端节点"
+            }
+          }
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      }
+    }
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "schemaVersion": 27,
+  "version": 1,
+  "annotations": {
+    "list": []
+  }
+} 

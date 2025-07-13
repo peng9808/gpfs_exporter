@@ -1,0 +1,671 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "8.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    }
+  ],
+  "id": null,
+  "uid": "gpfs-network-monitoring",
+  "title": "GPFS 网络监控",
+  "tags": ["gpfs", "network", "monitoring"],
+  "timezone": "browser",
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "label_values(gpfs_health_status, component)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "选择组件",
+        "multi": true,
+        "name": "component",
+        "options": [],
+        "query": {
+          "query": "label_values(gpfs_health_status, component)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "label_values(gpfs_health_status{component=~\"NETWORK|CESNETWORK\"}, entityname)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "选择网络实体",
+        "multi": true,
+        "name": "network_entity",
+        "options": [],
+        "query": {
+          "query": "label_values(gpfs_health_status{component=~\"NETWORK|CESNETWORK\"}, entityname)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "InfiniBand状态",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "gpfs_verbs_status",
+          "legendFormat": "InfiniBand Verbs",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "text": "停止",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "运行",
+                  "color": "green"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 2,
+      "title": "网络组件健康状态",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(gpfs_health_status{component=~\"NETWORK|CESNETWORK\",status=\"HEALTHY\"})",
+          "legendFormat": "健康",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 3,
+      "title": "网络组件问题数",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(gpfs_health_status{component=~\"NETWORK|CESNETWORK\",status=~\"FAILED|DEGRADED|SUSPENDED\"})",
+          "legendFormat": "问题组件",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 4,
+      "title": "网络组件总数",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(gpfs_health_status{component=~\"NETWORK|CESNETWORK\"})",
+          "legendFormat": "总组件数",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 5,
+      "title": "网络组件健康状态详情",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "gpfs_health_status{component=~\"NETWORK|CESNETWORK\",entityname=~\"$network_entity\"}",
+          "legendFormat": "",
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "width": 120
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "entityname"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "网络实体"
+              },
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "entitytype"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "类型"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "status"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "状态"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "HEALTHY": {
+                        "text": "健康",
+                        "color": "green"
+                      },
+                      "FAILED": {
+                        "text": "失败",
+                        "color": "red"
+                      },
+                      "DEGRADED": {
+                        "text": "降级",
+                        "color": "yellow"
+                      },
+                      "SUSPENDED": {
+                        "text": "暂停",
+                        "color": "orange"
+                      },
+                      "TIPS": {
+                        "text": "提示",
+                        "color": "blue"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "状态"
+          }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "title": "问题网络组件详情",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "gpfs_health_status{component=~\"NETWORK|CESNETWORK\",status=~\"FAILED|DEGRADED|SUSPENDED|TIPS\"}",
+          "legendFormat": "",
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "width": 120
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "entityname"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "网络实体"
+              },
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "entitytype"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "类型"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "component"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "组件"
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "status"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "状态"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "FAILED": {
+                        "text": "失败",
+                        "color": "red"
+                      },
+                      "DEGRADED": {
+                        "text": "降级",
+                        "color": "yellow"
+                      },
+                      "SUSPENDED": {
+                        "text": "暂停",
+                        "color": "orange"
+                      },
+                      "TIPS": {
+                        "text": "提示",
+                        "color": "blue"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "状态"
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "title": "网络健康事件",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "gpfs_health_event{component=~\"NETWORK|CESNETWORK\"}",
+          "legendFormat": "",
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "width": 120
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "entityname"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "网络实体"
+              },
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "entitytype"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "类型"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "事件"
+              },
+              {
+                "id": "custom.width",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "事件"
+          }
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "title": "InfiniBand状态历史",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "gpfs_verbs_status",
+          "legendFormat": "InfiniBand Verbs状态",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "yAxes": [
+        {
+          "label": "状态",
+          "unit": "short",
+          "max": 1,
+          "min": 0
+        },
+        {
+          "show": false
+        }
+      ],
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": false,
+        "values": true
+      }
+    }
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "schemaVersion": 27,
+  "version": 1,
+  "annotations": {
+    "list": []
+  }
+} 

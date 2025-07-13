@@ -1,0 +1,218 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "8.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    }
+  ],
+  "id": null,
+  "uid": "gpfs-cluster-performance-qos",
+  "title": "GPFS 集群性能监控",
+  "tags": ["gpfs", "cluster", "performance"],
+  "timezone": "browser",
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "label_values(gpfs_qos_iops, fs)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "文件系统",
+        "multi": true,
+        "name": "filesystem",
+        "options": [],
+        "query": {
+          "query": "label_values(gpfs_qos_iops, fs)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "集群总吞吐量",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(gpfs_qos_bytes_per_second{fs=~\"$filesystem\"})",
+          "legendFormat": "总吞吐量",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "binBps",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 2,
+      "title": "集群总IOPS",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(gpfs_qos_iops{fs=~\"$filesystem\"})",
+          "legendFormat": "总IOPS",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 3,
+      "title": "吞吐量趋势",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(gpfs_qos_bytes_per_second{fs=~\"$filesystem\"})",
+          "legendFormat": "总吞吐量",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "binBps",
+          "decimals": 1
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "yAxes": [
+        {
+          "label": "吞吐量 (GiB/s)",
+          "unit": "binBps",
+          "decimals": 1
+        },
+        {
+          "show": false
+        }
+      ],
+      "legend": {
+        "show": true,
+        "values": false,
+        "alignAsTable": false
+      }
+    },
+    {
+      "id": 4,
+      "title": "IOPS趋势",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(gpfs_qos_iops{fs=~\"$filesystem\"})",
+          "legendFormat": "总IOPS",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "yAxes": [
+        {
+          "label": "操作/秒",
+          "unit": "short"
+        },
+        {
+          "show": false
+        }
+      ],
+      "legend": {
+        "show": true,
+        "values": false,
+        "alignAsTable": false
+      }
+    }
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "schemaVersion": 27,
+  "version": 2,
+  "annotations": {
+    "list": []
+  }
+} 

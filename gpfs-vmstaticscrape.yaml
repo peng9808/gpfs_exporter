@@ -1,0 +1,10 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMStaticScrape
+metadata:
+  name: gpfs
+  namespace: prom
+spec:
+  jobName: gpfs
+  targetEndpoints:
+    - targets:
+        - 10.192.0.101:9303 

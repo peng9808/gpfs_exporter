@@ -1,0 +1,773 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "8.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "gauge",
+      "name": "Gauge",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    }
+  ],
+  "id": null,
+  "uid": "gpfs-filesystem-space",
+  "title": "GPFS 文件系统空间监控",
+  "tags": ["gpfs", "filesystem", "space"],
+  "timezone": "browser",
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "label_values(gpfs_fs_size_bytes, fs)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "选择文件系统",
+        "multi": true,
+        "name": "filesystem",
+        "options": [],
+        "query": {
+          "query": "label_values(gpfs_fs_size_bytes, fs)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "总空间",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(gpfs_fs_size_bytes{fs=~\"$filesystem\"})",
+          "legendFormat": "总空间",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 2,
+      "title": "已用空间",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(gpfs_fs_size_bytes{fs=~\"$filesystem\"}) - sum(gpfs_fs_free_bytes{fs=~\"$filesystem\"})",
+          "legendFormat": "已用空间",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decbytes",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 3,
+      "title": "空闲空间",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(gpfs_fs_free_bytes{fs=~\"$filesystem\"})",
+          "legendFormat": "空闲空间",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "options": {
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      }
+    },
+    {
+      "id": 4,
+      "title": "空间使用率",
+      "type": "gauge",
+      "targets": [
+        {
+          "expr": "(sum(gpfs_fs_size_bytes{fs=~\"$filesystem\"}) - sum(gpfs_fs_free_bytes{fs=~\"$filesystem\"})) / sum(gpfs_fs_size_bytes{fs=~\"$filesystem\"}) * 100",
+          "legendFormat": "使用率",
+          "datasource": "${DS_PROMETHEUS}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "orange",
+                "value": 85
+              },
+              {
+                "color": "red",
+                "value": 95
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      }
+    },
+    {
+      "id": 5,
+      "title": "文件系统空间详情",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "gpfs_fs_size_bytes{fs=~\"$filesystem\"}",
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "expr": "gpfs_fs_free_bytes{fs=~\"$filesystem\"}",
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "expr": "gpfs_fs_size_bytes{fs=~\"$filesystem\"} - gpfs_fs_free_bytes{fs=~\"$filesystem\"}",
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true,
+          "refId": "C"
+        },
+        {
+          "expr": "(gpfs_fs_size_bytes{fs=~\"$filesystem\"} - gpfs_fs_free_bytes{fs=~\"$filesystem\"}) / gpfs_fs_size_bytes{fs=~\"$filesystem\"} * 100",
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true,
+          "refId": "D"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "displayMode": "color-text",
+            "filterable": true,
+            "width": 140
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "文件系统"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "总空间"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "已用空间"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "空闲空间"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "空间使用率"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 70
+                    },
+                    {
+                      "color": "orange",
+                      "value": 85
+                    },
+                    {
+                      "color": "red",
+                      "value": 95
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "文件系统"
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "instance": true,
+              "cluster": true,
+              "vmagent_shard": true
+            },
+            "indexByName": {
+              "fs": 0,
+              "Value #A": 1,
+              "Value #C": 2,
+              "Value #B": 3,
+              "Value #D": 4
+            },
+            "renameByName": {
+              "fs": "文件系统",
+              "Value #A": "总空间",
+              "Value #B": "空闲空间",
+              "Value #C": "已用空间",
+              "Value #D": "空间使用率"
+            }
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "文件系统": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "总空间": {
+                "aggregations": ["max"],
+                "operation": "aggregate"
+              },
+              "已用空间": {
+                "aggregations": ["max"],
+                "operation": "aggregate"
+              },
+              "空闲空间": {
+                "aggregations": ["max"],
+                "operation": "aggregate"
+              },
+              "空间使用率": {
+                "aggregations": ["max"],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "总空间 (max)": "总空间",
+              "已用空间 (max)": "已用空间",
+              "空闲空间 (max)": "空闲空间",
+              "空间使用率 (max)": "空间使用率"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "文件系统Inode详情",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "gpfs_fs_inodes{fs=~\"$filesystem\"}",
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "expr": "gpfs_fs_used_inodes{fs=~\"$filesystem\"}",
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "expr": "gpfs_fs_inodes{fs=~\"$filesystem\"} - gpfs_fs_used_inodes{fs=~\"$filesystem\"}",
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true,
+          "refId": "C"
+        },
+        {
+          "expr": "gpfs_fs_used_inodes{fs=~\"$filesystem\"} / gpfs_fs_inodes{fs=~\"$filesystem\"} * 100",
+          "datasource": "${DS_PROMETHEUS}",
+          "format": "table",
+          "instant": true,
+          "refId": "D"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "displayMode": "color-text",
+            "filterable": true,
+            "width": 140
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "文件系统"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "总Inode"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "已用Inode"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "空闲Inode"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Inode使用率"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 70
+                    },
+                    {
+                      "color": "orange",
+                      "value": 85
+                    },
+                    {
+                      "color": "red",
+                      "value": 95
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "文件系统"
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "instance": true,
+              "cluster": true,
+              "vmagent_shard": true
+            },
+            "indexByName": {
+              "fs": 0,
+              "Value #A": 1,
+              "Value #B": 2,
+              "Value #C": 3,
+              "Value #D": 4
+            },
+            "renameByName": {
+              "fs": "文件系统",
+              "Value #A": "总Inode",
+              "Value #B": "已用Inode",
+              "Value #C": "空闲Inode",
+              "Value #D": "Inode使用率"
+            }
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "文件系统": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "总Inode": {
+                "aggregations": ["max"],
+                "operation": "aggregate"
+              },
+              "已用Inode": {
+                "aggregations": ["max"],
+                "operation": "aggregate"
+              },
+              "空闲Inode": {
+                "aggregations": ["max"],
+                "operation": "aggregate"
+              },
+              "Inode使用率": {
+                "aggregations": ["max"],
+                "operation": "aggregate"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "总Inode (max)": "总Inode",
+              "已用Inode (max)": "已用Inode",
+              "空闲Inode (max)": "空闲Inode",
+              "Inode使用率 (max)": "Inode使用率"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "schemaVersion": 27,
+  "version": 1,
+  "annotations": {
+    "list": []
+  }
+} 
